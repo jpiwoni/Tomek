@@ -11,7 +11,7 @@ const BoardRow = ({ row, rowIndex, onClick, onMouseOver, onMouseOut }) => {
     }
 
     return (
-        <div className="row row-cols-11 mb-0">
+        <div className="row row-cols-11 m-0">
             <div className="col square">{rowIndex + 1}</div>
             {drawRow()}
         </div>

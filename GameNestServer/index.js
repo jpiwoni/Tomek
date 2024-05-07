@@ -5,15 +5,17 @@ const db = require('./db');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const websockets = require('./websockets');
+dotenv.config()
 app = express()
 db.connect()
-dotenv.config()
+
 
 const auth = require('./auth');
 const battleship = require('./games/battleship');
 const wordle = require('./games/wordle')
 
-var url = require('url');
+const url = require('url');
 
 const port = process.env.PORT || 3000
 
@@ -72,8 +74,9 @@ app.use((err, request, response, next) => {
   response.send('500 - Server Error')
 })
 
-app.listen(port, () => console.log(
+const server = app.listen(port, () => console.log(
   `Express started at \"http://localhost:${port}\"\n` +
-  `press Ctrl-C to terminate.`),
-  //open(`http://localhost:${port}`)
+  `press Ctrl-C to terminate.`)
 )
+
+websockets.connect(server)

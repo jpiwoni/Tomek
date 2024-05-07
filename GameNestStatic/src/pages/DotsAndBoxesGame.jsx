@@ -1,366 +1,226 @@
-// js
-import React, { Component } from 'react';
-import { Container, Row, Col, Input, InputGroup, InputGroupAddon, Button } from 'reactstrap';
-import { Game, CONST } from 'dots-and-boxes';
-// css
-import 'bootstrap/dist/css/bootstrap.css';
-import './css/style.css';
-// img
-import fieldEmptyImg from './img/empty.png';
-import fieldArcImg from './img/arc.png';
-import fieldCrossImg from './img/cross.png';
+class App extends React.Component {
 
-const PLAYER = CONST.PLAYER;
-const BORDER_STYLE_FREE   = "1px dotted rgba(204,31,48,1)";
-const BORDER_STYLE_STOKED = "2px solid ";
-const BORDER_STYLE_HIDDEN = "1px none";
-const fieldImageWidth     = 60;
-const sideWidth           = 8; // see style.css
-const fieldWidth          = fieldImageWidth + sideWidth + sideWidth;
-
-
-
-class BoardBox extends React.Component {
-
-  fieldImageUrl () {
-    let box = this.props.box;
-    if(box) {
-      if(box.owner === PLAYER.USER)     return fieldCrossImg;
-      if(box.owner === PLAYER.COMPUTER) return fieldArcImg;
-    };  
-    return fieldEmptyImg;
-  }
-  
-  lineCursor (side) {
-    if (this.props.box.lines[side].owner === 0)
-      return {};
-    return {cursor: 'default'};
+  constructor(props) {
+    super(props)
+    this.state = this.initialBoard(5)
   }
 
-  render () {
-    let box = this.props.box;
-    let x = box.pos.x + 1;
-    let y = box.pos.y + 1;
-    let ownerColor = ['rgba(204,31,48,1)', 'red', 'blue'];
-    let boxStyle = {
-      gridColumnStart: x,
-      gridColumnEnd: x,
-      gridRowStart:  y,
-      gridRowEnd: y,
-      borderTop:    BORDER_STYLE_HIDDEN,
-      borderRight:  BORDER_STYLE_FREE,
-      borderBottom: BORDER_STYLE_FREE,
-      borderLeft:   BORDER_STYLE_HIDDEN
-    };
-    let imgStyle = {
-      top:    4,
-      left:   4,
-      width:  50, 
-      height: 50
-    };
-  
-    if(box.pos.x === 0) {
-      boxStyle.borderLeft = box.left ? BORDER_STYLE_STOKED + ownerColor[box.left] : BORDER_STYLE_FREE;
-    }
-    if(box.pos.y === 0) {
-      boxStyle.borderTop = box.top ? BORDER_STYLE_STOKED + ownerColor[box.top] : BORDER_STYLE_FREE;
-    }
-    boxStyle.borderRight = box.right ? BORDER_STYLE_STOKED + ownerColor[box.right] : BORDER_STYLE_FREE;
-    boxStyle.borderBottom = box.bottom ? BORDER_STYLE_STOKED + ownerColor[box.bottom] : BORDER_STYLE_FREE;
-
-    return (
-      <div className="boxContainer" key={this.props.box.id} style={boxStyle} >
-        <div className="boxSideN" style={this.lineCursor('top')} onClick={this.props.lineClick.bind(this,box.lines.top.id)}></div>
-        <div className="boxSideS" style={this.lineCursor('bottom')} onClick={this.props.lineClick.bind(this,box.lines.bottom.id)}></div>
-        <div className="boxSideE" style={this.lineCursor('right')} onClick={this.props.lineClick.bind(this,box.lines.right.id)}></div>
-        <div className="boxSideW" style={this.lineCursor('left')} onClick={this.props.lineClick.bind(this,box.lines.left.id)}></div>
-        <img className="boxCenter" style={imgStyle} src={this.fieldImageUrl()} alt={this.props.box.id} />              
-        </div>        
-    );  
+  initialBoard = (size) => {
+    let state = {boardSize: size,
+    numRed: 0,
+    numBlue: 0,
+    turn: "red",
+    winMessage: "",
+    lineCoordinates: {},
+    boxColors: {}
   }
-  
-};
-
-
-
-
-class GameBoard extends React.Component {
-    
-  cells () {
-    let boxes = this.props.board.boxes;
-    let result = [];
-    for (let i=0; i < boxes.length; i++) 
-      result.push(<BoardBox box={boxes[i]} key={boxes[i].id} lineClick={this.props.lineClick} />);
-    return result;
-  }
-  
-  render () {
-    let board = this.props.board;
-    let boardWidth  = board.size.x * fieldWidth;
-    let boardHeight = board.size.y * fieldWidth;
-    let boardStyle = {
-      display: 'grid',
-      width:   boardWidth,
-      height:  boardHeight,
-      gridTemplateColumns: 'repeat(' + board.size.x + ' ' + fieldWidth + 'px)',
-      gridTemplateRows:    'repeat(' + board.size.y + ' ' + fieldWidth + 'px)',
-    }
-    return (
-     <div className="board_container" style={boardStyle}>
-       {this.cells()}
-     </div>
-    );
-  }
-  
-};
-
-
-class StatusMessage extends React.Component  {
-  
-  render () {
-    let game = this.props.game;
-    let turn = this.props.turn;
-    let scores = game.scores;
-    let undoButton = <Button outline color="secondary"  size="sm" onClick={this.props.undo}>Undo</Button>;
-    let computerStartsButton = <Button outline color="warning"  size="sm" onClick={this.props.computerStarts}>Computer Starts</Button>;
-    let newGameButton = <Button outline color="danger"  size="sm" onClick={this.props.newGame}>New Game</Button>;
-    let scoreTxt = <p><strong>Scores</strong><br/>you <strong>{scores[PLAYER.USER]}</strong> computer <strong>{scores[PLAYER.COMPUTER]}</strong> </p>;
-
-    if (turn === null) {
-      return (
-        <div>
-          <p><strong>New game</strong></p>
-          <p>
-            {computerStartsButton}        
-          </p>
-        </div>
-      );
-    }
-
-    if (scores[PLAYER.NONE] === 0) {
-      return (
-        <div>
-          <p><strong>Game is over</strong></p>
-          {scoreTxt}
-          <p>
-            {game.isSaved() ? undoButton : ''}
-            &nbsp;
-            {newGameButton}
-            &nbsp;
-            {computerStartsButton}        
-          </p>
-        </div>
-      );
-    }
-
-    if (turn.complete) {
-      return (
-        <div>
-          <p>Your turn: {describeTurn(turn)}</p>
-          <p>You have occupied a field and can play again</p>
-          {scoreTxt}
-          <p>
-            {game.isSaved() ? undoButton : ''}
-            &nbsp;
-            {newGameButton}
-            &nbsp;
-            {computerStartsButton}
-          </p>
-        </div>
-      );
-    }
-
-    if (turn.otherTurn) {
-      return (
-        <div>
-          <p>Your turn: {describeTurn(turn)}</p>
-          <p>Computer: {describeTurnList(turn.otherTurn)}</p>
-          {scoreTxt}
-          <p>
-            {game.isSaved() ? undoButton : ''}
-            &nbsp;
-            {newGameButton}
-            &nbsp;
-            {computerStartsButton}
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div>
-        <p>Your turn: {describeTurn(turn)}</p>
-        {scoreTxt}
-        <p>
-          {game.isSaved() ? undoButton : ''}
-          &nbsp;
-          {newGameButton}
-          &nbsp;
-          {computerStartsButton}
-        </p>
-      </div>
-    );  
-  
-
-    function describeTurn(turn) {
-      if (!turn || turn.line === undefined) return '';
-      let line = game.board.lines[ turn.line ];
-      return [line.boxes[0].pos.x+1, line.boxes[0].pos.y+1, line.side].join(' ');
-    }
-
-    function describeTurnList(list) {
-      if (!list) return '';
-      var a = [];
-      for (var i = 0; i < list.length; i++) a.push(describeTurn(list[i]));
-      return a.join(', ');
-    }
-   
-  }  
-};
-
-
-class OptionsPanel extends React.Component {
-
-  constructor (props) {
-    super(props);
-    this.boardDimChangeX = this.boardDimChangeX.bind(this);
-    this.boardDimChangeY = this.boardDimChangeY.bind(this);
-  }
-  
-  boardDimChangeX (e) {
-    let value = parseInt(e.target.value);
-    if (value > 10) value = 10;
-    if (value < 2)  value = 2;
-    this.props.onBoardDimChange({x: value, y: this.props.boardDim.y});
-  }
-
-  boardDimChangeY (e) {
-    let value = parseInt(e.target.value);
-    if (value > 10) value = 10;
-    if (value < 2)  value = 2;
-    this.props.onBoardDimChange({y: value, x: this.props.boardDim.x});
-  }
-
-  render () {
-    return (
-      <div>
-          <span className="display-5">Options</span>
-          <InputGroup size="sm">
-            <InputGroupAddon addonType="prepend">Columns</InputGroupAddon>
-            <Input placeholder="Columns" type="number" min="2" max="10" step="1" onChange={this.boardDimChangeX} value={this.props.boardDim.x} />
-            <InputGroupAddon addonType="prepend">Rows</InputGroupAddon>
-            <Input placeholder="Rows" type="number" min="2" max="10" step="1" onChange={this.boardDimChangeY} value={this.props.boardDim.y} />
-          </InputGroup>
-      </div>
-    );
-  }
-};
-
-
-
-class App extends Component {
-  
-  constructor (props) {
-    super(props);
-    const boardDim = {x:4, y:4};
-    this.state = {
-      boardDim: boardDim,
-      game: new Game({size: boardDim, level:2}),
-      turn: null
-    };
-    this.lineClick = this.lineClick.bind(this);
-    this.boardDimChange = this.boardDimChange.bind(this);
-    this.computerStarts = this.computerStarts.bind(this);
-    this.newGame = this.newGame.bind(this);
-    this.undo = this.undo.bind(this);
-  }
-  
-  boardDimChange (newDim) {
-    let game = new Game({size: newDim, level:2});
-    this.setState({
-      boardDim: newDim,
-      game:     game,
-      turn:     null
-    });
-  }
-  
-  lineClick (line) {
-    line = parseInt(line);
-    console.log('lineClick', line);
-    let game = this.state.game;
-    let turn = game.executeUserTurn(line);
-    if (turn) {
-      this.setState({
-        game: game,
-        turn: turn
-      });
+  for (let i=0; i<2; i++){
+    for (let j=0; j<state.boardSize+1; j++) {
+      for (let k=0; k<state.boardSize; k++) {
+        state.lineCoordinates[i+","+j+","+k]=0
+      }
     }
   }
-  
-  newGame () {
-    let game = new Game({size: this.state.boardDim, level:2});
-    this.setState({
-      game:     game,
-      turn:     null
-    });
+  for (let i=0; i< state.boardSize; i++) {
+    for (let j=0; j< state.boardSize; j++) {
+      state.boxColors[i+","+j] = "rgb(255,255,255)"
+    }
   }
-  
-  computerStarts () {
-    let game = new Game({size: this.state.boardDim, level:2});
-    game.executeAutoTurn(PLAYER.COMPUTER);
-    this.setState({
-      game:     game,
-      turn:     null
-    });
+  return state
+}
+
+  fillLine = (event) => {
+    var currentCoord=event.target.dataset.coord
+    if (this.state.lineCoordinates[currentCoord] === 0) {
+      //event.target.style.backgroundColor =  this.state.turn
+      let newState=this.state.lineCoordinates
+      newState[currentCoord] = this.state.turn === "red"? 1 : -1
+      this.setState(prevState => ({
+        lineCoordinates: newState,
+      }))
+
+      var splitCoord=currentCoord.split(',')
+      var i = splitCoord[0]
+      var j = splitCoord[1]
+      var k = splitCoord[2]
+
+      let newBoxColors = this.state.boxColors
+
+      var madeSquare = 0
+
+      if (i === "0") {
+        if (this.checkSquare(j,k) === 4) {
+          madeSquare = 1
+          newBoxColors[j+','+k] =  (this.state.turn ==="red") ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)"
+          this.setState((prevState)=>({
+            numRed: (prevState.turn ==="red") ? prevState.numRed+1 : prevState.numRed,
+            numBlue: (prevState.turn ==="blue") ? prevState.numBlue+1 : prevState.numBlue,
+            boxColors: newBoxColors,
+          }))
+        }
+        if (this.checkSquare(parseFloat(j)-1,k) === 4) {
+          madeSquare = 1
+          newBoxColors[(parseFloat(j)-1)+','+k] = (this.state.turn ==="red") ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)"
+          this.setState((prevState)=>({
+            numRed: (prevState.turn ==="red") ? prevState.numRed+1 : prevState.numRed,
+            numBlue: (prevState.turn ==="blue") ? prevState.numBlue+1 : prevState.numBlue,
+            boxColors: newBoxColors,
+          }))
+        }
+      } else {
+        if (this.checkSquare(k,j) === 4) {
+          madeSquare = 1
+          newBoxColors[k+','+j] = (this.state.turn ==="red") ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)"
+          this.setState((prevState)=>({
+            numRed: (prevState.turn ==="red") ? prevState.numRed+1 : prevState.numRed,
+            numBlue: (prevState.turn ==="blue") ? prevState.numBlue+1 : prevState.numBlue,
+            boxColors: newBoxColors,
+          }))
+        }
+        if (this.checkSquare(k,parseFloat(j)-1) === 4) {
+          madeSquare = 1
+          newBoxColors[k+','+(parseFloat(j)-1)] = (this.state.turn ==="red") ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)"
+          this.setState((prevState)=>({
+            numRed: (prevState.turn ==="red") ? prevState.numRed+1 : prevState.numRed,
+            numBlue: (prevState.turn ==="blue") ? prevState.numBlue+1 : prevState.numBlue,
+            boxColors: newBoxColors,
+          }))
+        }
+      }
+      if (madeSquare === 0) {
+        this.setState((prevState)=> ({
+          turn: prevState.turn === "red" ? "blue" : "red",
+        }))
+      } else {
+        this.checkGameOver()
+      }
+    }
   }
-  
-  undo () {
-    let game = this.state.game;
-    game.restoreGame();
-    this.setState({
-      game:     game,
-      turn:     {}
-    });
+
+  checkSquare = (j,k) => {
+    var checker1 = Math.abs(this.state.lineCoordinates['0,'+j+','+k])
+    var checker2 = Math.abs(((parseFloat(j)+1))>this.state.boardSize ? 0 : this.state.lineCoordinates['0,'+(parseFloat(j)+1)+','+k])
+    var checker3 = Math.abs(this.state.lineCoordinates['1,'+k+','+j])
+    var checker4 = Math.abs(((parseFloat(k)+1))>this.state.boardSize ? 0 : this.state.lineCoordinates['1,'+(parseFloat(k)+1)+','+j])
+    return checker1+checker2+checker3+checker4
   }
-  
+
+  checkGameOver = () => {
+    this.setState((prevState) =>   ({
+      winMessage: (prevState.numRed+prevState.numBlue == prevState.boardSize**2)? this.makeWinMessage(prevState) : ""
+    }))
+  }
+
+  makeWinMessage = (state) => {
+    var winMessage
+      if (state.numRed > state.numBlue) {
+        winMessage = "Red wins! Select a board size to start a new game."
+      } else if (state.numRed < state.numBlue) {
+        winMessage = "Blue wins! Select a board size to start a new game."
+      } else {
+        winMessage = "Draw! Select a board size to start a new game."
+      }
+      return (winMessage)
+  }
+
+  changeBoardSize = (event) => {
+    if (window.confirm('Are you sure you would like to start a new game?')){
+      var newState
+      if (event.target.id === "small") {
+        newState = this.initialBoard(5)
+      } else if (event.target.id === "medium") {
+        newState = this.initialBoard(8)
+      } else if (event.target.id === "large") {
+        newState = this.initialBoard(11)
+      }
+      this.setState((prevState)=> newState)
+    }
+  }
+
+  selectColor = (int) => {
+    if (int===0) {
+      return ("rgb(255,255,255)")
+    } else if (int===1) {
+      return ("rgb(255,0,0)")
+    } else if (int===-1) {
+      return ("rgb(0,0,255)")
+    }
+  }
+
+  tint = (event) => {
+    var currentCoord=event.target.dataset.coord
+    if (this.state.lineCoordinates[currentCoord] === 0) {
+        if (this.state.turn === "red") {
+          event.target.style.backgroundColor = "rgba(255,0,0,0.5)"
+        } else {
+          event.target.style.backgroundColor = "rgba(0,0,255,0.5)"
+        }
+    }
+  }
+
+  untint = (event) => {
+    var currentCoord=event.target.dataset.coord
+    if (this.state.lineCoordinates[currentCoord] === 0) {
+      event.target.style.backgroundColor = "rgb(255,255,255)"
+    }
+  }
+
+  makeBoard = (boardSize) => {
+    var cols=[];
+    for (let i=0; i<=2*boardSize; i++) {
+      var row=[]
+      for (let j=0; j<=2*boardSize; j++) {
+        if (i%2 === 0) {
+          if (j%2 ===0) {
+            row.push(React.createElement("div",
+            {className: "dot", id: "dot"+Math.floor(i/2)+","+Math.floor(j/2)}
+            ,""))
+          } else {
+            row.push(React.createElement("div"
+              , {className: "horizContainer", "data-coord":"0,"+Math.floor(i/2)+ "," +Math.floor(j/2)
+              , onClick:this.fillLine, style:{backgroundColor: this.selectColor(this.state.lineCoordinates["0,"+Math.floor(i/2)+ "," +Math.floor(j/2)])}
+              , onMouseEnter:this.tint, onMouseLeave:this.untint}
+              , ""))
+          }
+        } else {
+          if (j%2 === 0) {
+            row.push(React.createElement("div"
+              ,{className: "vertContainer","data-coord":"1,"+Math.floor(j/2)+ "," +Math.floor(i/2)
+              , onClick:this.fillLine, style:{backgroundColor: this.selectColor(this.state.lineCoordinates["1,"+Math.floor(j/2)+ "," +Math.floor(i/2)])}
+              , onMouseEnter:this.tint, onMouseLeave:this.untint}
+              ,""))
+          } else {
+            row.push(React.createElement("div"
+              ,{className: "box", id: "box"+Math.floor(i/2)+','+Math.floor(j/2), style: {backgroundColor: this.state.boxColors[Math.floor(i/2)+','+Math.floor(j/2)]}}
+              ,""))
+
+          }
+        }
+      }
+      cols.push(React.createElement("div",{className:"row"},row))
+    }
+
+    return (React.createElement("div",{id:"game-board"},cols))
+  }
+
   render() {
     return (
-      <Container>
-        <Row>
-          <Col size="10">
-            <h1 className="display-3">Dots And Boxes</h1>
-          </Col>
-        </Row>
-        <Row>
-          <Col size="1">
-            <StatusMessage 
-              game={this.state.game} 
-              turn={this.state.turn} 
-              newGame={this.newGame}
-              computerStarts={this.computerStarts}
-              undo={this.undo}
-            />
-          </Col>   
-          <Col size="auto" >
-            <GameBoard 
-              board={this.state.game.board} 
-              lineClick={this.lineClick} 
-            />
-          </Col>   
-          <Col size="1">
-          </Col>   
-        </Row>
-        <Row>
-          <Col size="1">
-          </Col>   
-          <Col size="auto" />
-          <Col size="1">
-          </Col>   
-        </Row>
-      </Container>      
+      <div id="game">
+        <div id="header">
+          <h1 id="welcome">Dots &amp; Boxes </h1>
+          <p id="score"> Red:{this.state.numRed} Blue:{this.state.numBlue} </p>
+          Board size :
+          <button id= "small" onClick={this.changeBoardSize}> 5x5 </button>
+          <button id="medium" onClick={this.changeBoardSize}> 8x8 </button>
+          <button id="large" onClick={this.changeBoardSize}> 11x11 </button>
+          <p id="winner"> {this.state.winMessage} </p>
+        </div>
+        <div id="board">
+          {this.makeBoard(this.state.boardSize)}
+        </div>
+      </div>
     );
   }
-};
+}
 
-export default App;
-
+ReactDOM.render(<App/>,document.getElementById('root'))

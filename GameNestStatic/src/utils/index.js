@@ -4,7 +4,9 @@ import {
     removeWindowClass,
 } from "./helpers";
 
+import getSocket from "./Battleship/battleshipSocket";
+
 export {
-    addWindowClass, processResponse, removeWindowClass
+    addWindowClass, getSocket, processResponse, removeWindowClass
 };
 

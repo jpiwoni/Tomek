@@ -60,6 +60,7 @@ function Header() {
                         <Nav.Link href="/battleship">Battleship</Nav.Link>
                         <Nav.Link href="/blackjack">Blackjack</Nav.Link>
                         <Nav.Link href="/wordle">Wordle</Nav.Link>
+                        <Nav.Link href="/dotsAndBoxes">Dots and Boxes</Nav.Link>
                     </Nav>
                 </Navbar.Collapse>
                 <GitHubLoginButton />

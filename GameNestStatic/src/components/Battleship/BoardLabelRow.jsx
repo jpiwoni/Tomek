@@ -10,7 +10,7 @@ const BoardLabelRow = () => {
     }
 
     return (
-        <div className="row row-cols-11 mb-0">
+        <div className="row row-cols-11 m-0">
             {drawRow()}
         </div>
     );

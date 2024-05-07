@@ -3,20 +3,22 @@ import { Col, Container, Row } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { Board } from '../components/Battleship';
 import { BattleshipGameStatus } from '../enums';
+import { useAppSelector, userSelector } from '../redux';
+import { getSocket } from '../utils';
+
 
 const BattleshipGame = () => {
+    const user = useAppSelector(userSelector);
     const { lobbyId } = useParams();
 
     const [gameState, setGameState] = React.useState(BattleshipGameStatus.SETUP);
 
     useEffect(() => {
-        verifyUserInLobby(lobbyId);
-        setGameState(BattleshipGameStatus.SETUP);
-    }, [lobbyId]);
+        if (!lobbyId || !user) return;
 
-    const verifyUserInLobby = (lobbyId) => {
-        console.log(`Verifying user in lobby ${lobbyId}`);
-    };
+        getSocket(lobbyId, user);
+
+    }, [lobbyId, user]);
 
     // Create an empty board full of 1s
 
