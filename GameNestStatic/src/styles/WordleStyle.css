@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Londrina+Outline&display=swap');
+
+
+.header {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.gameArea {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+
+/*  Landing page components  */
+.title {
+    font-family: "Londrina Outline", sans-serif;
+    font-size: 120px;
+    font-style: normal;
+    font-weight: 400;
+}
+
+.btn-xxl {
+    font-size: 2.5rem !important;
+}
+
+
+/*  Board components  */
+.container {
+    margin-top: 2vh;
+}
+
+.row {
+    flex: 33%;
+    display: flex;
+    flex-direction: row;
+    margin: 10px;
+  }
+
+.letter {
+    flex: 33%;
+    height: 100%;
+    border: 1px solid grey;
+    margin: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 42px;
+    width: 75px;
+    height: 75px;
+  }
+
+  #correct {
+    background-color: #32FF8C;
+  }
+  
+  #almost {
+    background-color: #ECFF74;
+  }
+  
+  #error {
+    background-color: #CECFC7;
+  }

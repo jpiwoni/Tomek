@@ -1,0 +1,32 @@
+html, body, div {
+    margin: 0;
+}
+.App {
+    background-color: #f0f0f0;
+    padding: 20px;
+
+  }
+  
+  .balance-section {
+    margin-bottom: 20px;
+  }
+  
+  .hands {
+    display: flex;
+  }
+  
+  .player-hand,
+  .dealer-hand {
+    flex: 1;
+    margin-right: 20px;
+  }
+  
+  .card-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .card-list li {
+    margin-bottom: 5px;
+  }
+  
