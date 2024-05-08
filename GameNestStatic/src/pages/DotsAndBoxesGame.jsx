@@ -1,226 +1,157 @@
-class App extends React.Component {
+import React, { useState, useEffect } from 'react';
+import '../styles/dotsAndBoxes.css';
 
-  constructor(props) {
-    super(props)
-    this.state = this.initialBoard(5)
-  }
+const DotsAndBoxesGame = () => {
+  const [boardSize, setBoardSize] = useState(5);
+  const [numRed, setNumRed] = useState(0);
+  const [numBlue, setNumBlue] = useState(0);
+  const [turn, setTurn] = useState("red");
+  const [winMessage, setWinMessage] = useState("");
+  const [lineCoordinates, setLineCoordinates] = useState({});
+  const [boxColors, setBoxColors] = useState({});
 
-  initialBoard = (size) => {
-    let state = {boardSize: size,
-    numRed: 0,
-    numBlue: 0,
-    turn: "red",
-    winMessage: "",
-    lineCoordinates: {},
-    boxColors: {}
-  }
-  for (let i=0; i<2; i++){
-    for (let j=0; j<state.boardSize+1; j++) {
-      for (let k=0; k<state.boardSize; k++) {
-        state.lineCoordinates[i+","+j+","+k]=0
-      }
-    }
-  }
-  for (let i=0; i< state.boardSize; i++) {
-    for (let j=0; j< state.boardSize; j++) {
-      state.boxColors[i+","+j] = "rgb(255,255,255)"
-    }
-  }
-  return state
-}
+  useEffect(() => {
+    initialBoard();
+  }, [boardSize]);
 
-  fillLine = (event) => {
-    var currentCoord=event.target.dataset.coord
-    if (this.state.lineCoordinates[currentCoord] === 0) {
-      //event.target.style.backgroundColor =  this.state.turn
-      let newState=this.state.lineCoordinates
-      newState[currentCoord] = this.state.turn === "red"? 1 : -1
-      this.setState(prevState => ({
-        lineCoordinates: newState,
-      }))
-
-      var splitCoord=currentCoord.split(',')
-      var i = splitCoord[0]
-      var j = splitCoord[1]
-      var k = splitCoord[2]
-
-      let newBoxColors = this.state.boxColors
-
-      var madeSquare = 0
-
-      if (i === "0") {
-        if (this.checkSquare(j,k) === 4) {
-          madeSquare = 1
-          newBoxColors[j+','+k] =  (this.state.turn ==="red") ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)"
-          this.setState((prevState)=>({
-            numRed: (prevState.turn ==="red") ? prevState.numRed+1 : prevState.numRed,
-            numBlue: (prevState.turn ==="blue") ? prevState.numBlue+1 : prevState.numBlue,
-            boxColors: newBoxColors,
-          }))
-        }
-        if (this.checkSquare(parseFloat(j)-1,k) === 4) {
-          madeSquare = 1
-          newBoxColors[(parseFloat(j)-1)+','+k] = (this.state.turn ==="red") ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)"
-          this.setState((prevState)=>({
-            numRed: (prevState.turn ==="red") ? prevState.numRed+1 : prevState.numRed,
-            numBlue: (prevState.turn ==="blue") ? prevState.numBlue+1 : prevState.numBlue,
-            boxColors: newBoxColors,
-          }))
-        }
-      } else {
-        if (this.checkSquare(k,j) === 4) {
-          madeSquare = 1
-          newBoxColors[k+','+j] = (this.state.turn ==="red") ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)"
-          this.setState((prevState)=>({
-            numRed: (prevState.turn ==="red") ? prevState.numRed+1 : prevState.numRed,
-            numBlue: (prevState.turn ==="blue") ? prevState.numBlue+1 : prevState.numBlue,
-            boxColors: newBoxColors,
-          }))
-        }
-        if (this.checkSquare(k,parseFloat(j)-1) === 4) {
-          madeSquare = 1
-          newBoxColors[k+','+(parseFloat(j)-1)] = (this.state.turn ==="red") ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)"
-          this.setState((prevState)=>({
-            numRed: (prevState.turn ==="red") ? prevState.numRed+1 : prevState.numRed,
-            numBlue: (prevState.turn ==="blue") ? prevState.numBlue+1 : prevState.numBlue,
-            boxColors: newBoxColors,
-          }))
+  const initialBoard = () => {
+    let newState = {lineCoordinates: {}, boxColors: {}};
+    for (let i = 0; i < 2; i++) {
+      for (let j = 0; j < boardSize + 1; j++) {
+        for (let k = 0; k < boardSize; k++) {
+          newState.lineCoordinates[`${i},${j},${k}`] = 0;
         }
       }
-      if (madeSquare === 0) {
-        this.setState((prevState)=> ({
-          turn: prevState.turn === "red" ? "blue" : "red",
-        }))
-      } else {
-        this.checkGameOver()
+    }
+    for (let i = 0; i < boardSize; i++) {
+      for (let j = 0; j < boardSize; j++) {
+        newState.boxColors[`${i},${j}`] = "rgb(255,255,255)";
       }
     }
-  }
+    setLineCoordinates(newState.lineCoordinates);
+    setBoxColors(newState.boxColors);
+    setNumRed(0);
+    setNumBlue(0);
+    setTurn("red");
+    setWinMessage("");
+  };
 
-  checkSquare = (j,k) => {
-    var checker1 = Math.abs(this.state.lineCoordinates['0,'+j+','+k])
-    var checker2 = Math.abs(((parseFloat(j)+1))>this.state.boardSize ? 0 : this.state.lineCoordinates['0,'+(parseFloat(j)+1)+','+k])
-    var checker3 = Math.abs(this.state.lineCoordinates['1,'+k+','+j])
-    var checker4 = Math.abs(((parseFloat(k)+1))>this.state.boardSize ? 0 : this.state.lineCoordinates['1,'+(parseFloat(k)+1)+','+j])
-    return checker1+checker2+checker3+checker4
-  }
-
-  checkGameOver = () => {
-    this.setState((prevState) =>   ({
-      winMessage: (prevState.numRed+prevState.numBlue == prevState.boardSize**2)? this.makeWinMessage(prevState) : ""
-    }))
-  }
-
-  makeWinMessage = (state) => {
-    var winMessage
-      if (state.numRed > state.numBlue) {
-        winMessage = "Red wins! Select a board size to start a new game."
-      } else if (state.numRed < state.numBlue) {
-        winMessage = "Blue wins! Select a board size to start a new game."
-      } else {
-        winMessage = "Draw! Select a board size to start a new game."
-      }
-      return (winMessage)
-  }
-
-  changeBoardSize = (event) => {
-    if (window.confirm('Are you sure you would like to start a new game?')){
-      var newState
-      if (event.target.id === "small") {
-        newState = this.initialBoard(5)
-      } else if (event.target.id === "medium") {
-        newState = this.initialBoard(8)
-      } else if (event.target.id === "large") {
-        newState = this.initialBoard(11)
-      }
-      this.setState((prevState)=> newState)
+  const fillLine = (event) => {
+    const currentCoord = event.target.dataset.coord;
+    const newLines = { ...lineCoordinates };
+    if (newLines[currentCoord] === 0) {
+      newLines[currentCoord] = turn === "red" ? 1 : -1;
+      setLineCoordinates(newLines);
+      updateBoxesAndTurn(currentCoord);
     }
-  }
+  };
 
-  selectColor = (int) => {
-    if (int===0) {
-      return ("rgb(255,255,255)")
-    } else if (int===1) {
-      return ("rgb(255,0,0)")
-    } else if (int===-1) {
-      return ("rgb(0,0,255)")
+  const updateBoxesAndTurn = (coord) => {
+    const [i, j, k] = coord.split(',').map(Number);
+    const newBoxColors = { ...boxColors };
+    let madeSquare = false;
+
+    if (checkSquare(j, k) === 4) {
+      madeSquare = true;
+      newBoxColors[`${j},${k}`] = turn === "red" ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)";
+    } 
+
+    if (checkSquare(j - 1, k) === 4) {
+      madeSquare = true;
+      newBoxColors[`${j - 1},${k}`] = turn === "red" ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)";
+    } 
+
+    setBoxColors(newBoxColors);
+    if (madeSquare) {
+      const newNumRed = numRed + (turn === "red" ? 1 : 0);
+      const newNumBlue = numBlue + (turn === "blue" ? 1 : 0);
+      setNumRed(newNumRed);
+      setNumBlue(newNumBlue);
+      checkGameOver();
+    } else {
+      setTurn(turn === "red" ? "blue" : "red");
     }
-  }
+  };
 
-  tint = (event) => {
-    var currentCoord=event.target.dataset.coord
-    if (this.state.lineCoordinates[currentCoord] === 0) {
-        if (this.state.turn === "red") {
-          event.target.style.backgroundColor = "rgba(255,0,0,0.5)"
-        } else {
-          event.target.style.backgroundColor = "rgba(0,0,255,0.5)"
-        }
+  const checkSquare = (j, k) => {
+    const checker1 = Math.abs(lineCoordinates[`0,${j},${k}`] || 0);
+    const checker2 = Math.abs(lineCoordinates[`0,${j + 1},${k}`] || 0);
+    const checker3 = Math.abs(lineCoordinates[`1,${k},${j}`] || 0);
+    const checker4 = Math.abs(lineCoordinates[`1,${k},${j + 1}`] || 0);
+    return checker1 + checker2 + checker3 + checker4;
+  };
+
+  const checkGameOver = () => {
+    if (numRed + numBlue === boardSize * boardSize) {
+      const message = numRed > numBlue ? "Red wins!" : numBlue > numRed ? "Blue wins!" : "Draw!";
+      setWinMessage(`${message} Select a board size to start a new game.`);
     }
-  }
+  };
 
-  untint = (event) => {
-    var currentCoord=event.target.dataset.coord
-    if (this.state.lineCoordinates[currentCoord] === 0) {
-      event.target.style.backgroundColor = "rgb(255,255,255)"
+  const changeBoardSize = (size) => {
+    if (window.confirm('Are you sure you would like to start a new game?')) {
+      setBoardSize(size);
     }
-  }
+  };
 
-  makeBoard = (boardSize) => {
-    var cols=[];
-    for (let i=0; i<=2*boardSize; i++) {
-      var row=[]
-      for (let j=0; j<=2*boardSize; j++) {
-        if (i%2 === 0) {
-          if (j%2 ===0) {
-            row.push(React.createElement("div",
-            {className: "dot", id: "dot"+Math.floor(i/2)+","+Math.floor(j/2)}
-            ,""))
+  const tint = (event) => {
+    const currentCoord = event.target.dataset.coord;
+    if (lineCoordinates[currentCoord] === 0) {
+      event.target.style.backgroundColor = turn === "red" ? "rgba(255,0,0,0.5)" : "rgba(0,0,255,0.5)";
+    }
+  };
+
+  const untint = (event) => {
+    const currentCoord = event.target.dataset.coord;
+    if (lineCoordinates[currentCoord] === 0) {
+        console.log("110");
+      event.target.style.backgroundColor = "rgb(255,255,255)";
+    }
+  };
+
+  const makeBoard = () => {
+    const cols = [];
+    for (let i = 0; i <= 2 * boardSize; i++) {
+      const row = [];
+      for (let j = 0; j <= 2 * boardSize; j++) {
+        if (i % 2 === 0) {
+          if (j % 2 === 0) {
+            row.push(<div className="dot" key={`dot-${i/2}-${j/2}`} />);
           } else {
-            row.push(React.createElement("div"
-              , {className: "horizContainer", "data-coord":"0,"+Math.floor(i/2)+ "," +Math.floor(j/2)
-              , onClick:this.fillLine, style:{backgroundColor: this.selectColor(this.state.lineCoordinates["0,"+Math.floor(i/2)+ "," +Math.floor(j/2)])}
-              , onMouseEnter:this.tint, onMouseLeave:this.untint}
-              , ""))
+            row.push(<div className="horizContainer" data-coord={`0,${Math.floor(i/2)},${Math.floor(j/2)}`} onClick={fillLine} onMouseEnter={tint} onMouseLeave={untint} key={`h-${i/2}-${j/2}`} />);
           }
         } else {
-          if (j%2 === 0) {
-            row.push(React.createElement("div"
-              ,{className: "vertContainer","data-coord":"1,"+Math.floor(j/2)+ "," +Math.floor(i/2)
-              , onClick:this.fillLine, style:{backgroundColor: this.selectColor(this.state.lineCoordinates["1,"+Math.floor(j/2)+ "," +Math.floor(i/2)])}
-              , onMouseEnter:this.tint, onMouseLeave:this.untint}
-              ,""))
+          if (j % 2 === 0) {
+            row.push(<div className="vertContainer" data-coord={`1,${Math.floor(j/2)},${Math.floor(i/2)}`} onClick={fillLine} onMouseEnter={tint} onMouseLeave={untint} key={`v-${j/2}-${i/2}`} />);
           } else {
-            row.push(React.createElement("div"
-              ,{className: "box", id: "box"+Math.floor(i/2)+','+Math.floor(j/2), style: {backgroundColor: this.state.boxColors[Math.floor(i/2)+','+Math.floor(j/2)]}}
-              ,""))
-
+            row.push(<div className="box" style={{ backgroundColor: boxColors[`${Math.floor(i/2)},${Math.floor(j/2)}`] }} key={`b-${i/2}-${j/2}`} />);
           }
         }
       }
-      cols.push(React.createElement("div",{className:"row"},row))
+      cols.push(<div className="row" key={`row-${i}`}>{row}</div>);
     }
+    return <div id="game-board">{cols}</div>;
+  };
 
-    return (React.createElement("div",{id:"game-board"},cols))
-  }
-
-  render() {
-    return (
-      <div id="game">
-        <div id="header">
-          <h1 id="welcome">Dots &amp; Boxes </h1>
-          <p id="score"> Red:{this.state.numRed} Blue:{this.state.numBlue} </p>
-          Board size :
-          <button id= "small" onClick={this.changeBoardSize}> 5x5 </button>
-          <button id="medium" onClick={this.changeBoardSize}> 8x8 </button>
-          <button id="large" onClick={this.changeBoardSize}> 11x11 </button>
-          <p id="winner"> {this.state.winMessage} </p>
+  return (
+    <div id="game">
+      <div id="header">
+        <h1 id="welcome">Dots &amp; Boxes</h1>
+        <p id="score">Red: {numRed} Blue: {numBlue}</p>
+        <div>
+          Board size:
+          <button onClick={() => changeBoardSize(5)}>5x5</button>
+          <button onClick={() => changeBoardSize(8)}>8x8</button>
+          <button onClick={() => changeBoardSize(11)}>11x11</button>
         </div>
-        <div id="board">
-          {this.makeBoard(this.state.boardSize)}
-        </div>
+        <p id="winner">{winMessage}</p>
       </div>
-    );
-  }
-}
+      <div id="board">
+        {makeBoard()}
+      </div>
+    </div>
+  );
+};
 
-ReactDOM.render(<App/>,document.getElementById('root'))
+export default DotsAndBoxesGame;
+

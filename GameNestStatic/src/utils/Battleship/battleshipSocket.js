@@ -8,27 +8,12 @@ const getSocket = (lobbyId, user) => {
 
         // Connection opened
         socket.addEventListener("open", (event) => {
-            const message = {
-                type: "connect",
-                lobbyId: lobbyId,
-            };
-            socket.send(JSON.stringify(message));
             console.log("Connected to server");
-        });
-
-        // Listen for messages
-        socket.addEventListener("message", (event) => {
-            const message = JSON.parse(event.data);
-            console.log("Message from server ", event.data);
-            if (message.type && message.type === "error") {
-                toast.error(message.message);
-            }
         });
 
         // Error handling
         socket.addEventListener("error", (error) => {
             console.log("WebSocket error:", error);
-            console.log("TEST");
             toast.error("WebSocket connection error. Please try again later.");
         });
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { CreateLobby, JoinLobby } from '../components/Battleship';
 
-const BattleshipLobby = ({ onCreateLobby, onJoinLobby }) => {
+const BattleshipLobby = () => {
   return (
     <Container>
       <Row>
@@ -12,10 +12,10 @@ const BattleshipLobby = ({ onCreateLobby, onJoinLobby }) => {
       </Row>
       <Row>
         <Col xs={12} md={6}>
-          <CreateLobby onCreateLobby={onCreateLobby} />
+          <CreateLobby />
         </Col>
         <Col xs={12} md={6}>
-          <JoinLobby onJoinLobby={onJoinLobby} />
+          <JoinLobby />
         </Col>
       </Row>
     </Container>

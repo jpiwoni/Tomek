@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 
-const JoinLobby = ({ onJoinLobby }) => {
+const JoinLobby = () => {
     const [lobbyId, setLobbyId] = useState('');
 
     const handleJoinLobby = () => {
         if (lobbyId.trim() !== '') {
-            onJoinLobby(lobbyId);
+            window.location.href = `/battleship/${lobbyId.toUpperCase()}`;
         } else {
             alert('Please enter the lobby ID');
         }

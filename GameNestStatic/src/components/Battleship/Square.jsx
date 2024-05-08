@@ -21,11 +21,9 @@ const Square = ({ value, onClick, state, onMouseOver, onMouseOut }) => {
     function getClasses() {
         let classes = "col square";
 
-        if (state === "hit") {
-            classes += " hit";
-        } else if (state === "miss") {
-            classes += " miss";
-        } else if (state === "sunk") {
+        if (state === "sunk") {
+            classes += " sunk";
+        } else if (state === "hit sunk") {
             classes += " sunk";
         } else if (state === "highlighted") {
             classes += " highlighted";
@@ -38,8 +36,17 @@ const Square = ({ value, onClick, state, onMouseOver, onMouseOut }) => {
         return classes;
     }
 
+    function getImage() {
+        if (state === "hit sunk" || state === "hit") {
+            return <img src="/img/battleship/hit.png" className={"w-100"} alt="hit battleship" />
+        } else if (state === "miss") {
+            return <img src="/img/battleship/miss.png" className={"w-100"} alt="missed battleship" />
+        }
+        return null
+    }
+
     return (
-        <div className={getClasses()} onClick={onClick} onMouseOver={_onMouseOver} onMouseOut={_onMouseOut}>{value}</div>
+        <div className={getClasses()} onClick={onClick} onMouseOver={_onMouseOver} onMouseOut={_onMouseOut}>{getImage()}</div>
     );
 }
 

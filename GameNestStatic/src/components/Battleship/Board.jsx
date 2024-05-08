@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Col, Row } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { BattleshipGameStatus, BattleshipShips, stringToShip } from "../../enums";
@@ -12,9 +12,21 @@ const Board = ({ board, ships, gameState, onClick }) => {
     const [shipPlaceVertical, setShipPlaceVertical] = React.useState(false);
     const [shipPlaceLocation, setShipPlaceLocation] = React.useState([0, 0]);
     const [selectedShip, setSelectedShip] = React.useState(BattleshipShips.CARRIER);
+    const [setupComplete, setSetupComplete] = React.useState(false);
+
+    useEffect(() => {
+        if (placedShips.length === 0 && ships.length !== 0) {
+            setPlacedShips(ships);
+            setSetupComplete(true);
+        }
+    }, [placedShips, ships]);
 
     function onCellClick(rowIndex, cellIndex) {
         if (gameState === BattleshipGameStatus.SETUP) {
+            if (setupComplete) {
+                toast.error("Board already submitted");
+                return;
+            }
             const placedShipsCopy = [...placedShips].filter(ship => ship.type !== selectedShip.name);
             let foundIntersection = false;
 
@@ -36,9 +48,12 @@ const Board = ({ board, ships, gameState, onClick }) => {
             placedShipsCopy.push({
                 type: selectedShip.name,
                 location: [rowIndex, cellIndex],
-                rotated: shipPlaceVertical
+                rotated: shipPlaceVertical,
+                sunk: false
             });
             setPlacedShips(placedShipsCopy);
+        } else if (gameState === BattleshipGameStatus.PLAYING) {
+            onClick(rowIndex, cellIndex);
         }
     }
 
@@ -50,6 +65,7 @@ const Board = ({ board, ships, gameState, onClick }) => {
         };
 
         socket.send(JSON.stringify(message));
+        setSetupComplete(true);
     }
 
     function onCellMouseOver(rowIndex, cellIndex) {
@@ -114,17 +130,25 @@ const Board = ({ board, ships, gameState, onClick }) => {
                 const [x, y] = ship.location;
                 const length = stringToShip(ship.type).length;
                 if (ship.rotated) {
-                    const sunk = boardCopy.map(row => row[y]).slice(x, x + length).every(cell => cell === "hit");
+                    const sunk = boardCopy.map(row => row[y]).slice(x, x + length);
                     for (let i = 0; i < length; i++) {
                         if (sunk) {
-                            boardCopy[x + i][y] = "sunk";
+                            if (boardCopy[x + i][y] === "hit") {
+                                boardCopy[x + i][y] = "hit sunk";
+                            } else {
+                                boardCopy[x + i][y] = "sunk";
+                            }
                         }
                     }
                 } else {
-                    const sunk = boardCopy[x].slice(y, y + length).every(cell => cell === "hit");
+                    const sunk = boardCopy[x].slice(y, y + length);
                     for (let i = 0; i < length; i++) {
                         if (sunk) {
-                            boardCopy[x][y + i] = "sunk";
+                            if (boardCopy[x][y + i] === "hit") {
+                                boardCopy[x][y + i] = "hit sunk";
+                            } else {
+                                boardCopy[x][y + i] = "sunk";
+                            }
                         }
                     }
                 }
@@ -142,7 +166,6 @@ const Board = ({ board, ships, gameState, onClick }) => {
 
     return (
         <div onContextMenu={onContextMenu}>
-            <h2>Board</h2>
             <Row>
                 <Col>
                     {<BoardLabelRow />}
@@ -159,7 +182,7 @@ const Board = ({ board, ships, gameState, onClick }) => {
                         })}
                     </Col>
                     <Col>
-                        <button className="btn btn-primary" disabled={placedShips.length !== Object.keys(BattleshipShips).length} onClick={submitBoard}>Submit</button>
+                        <button className="btn btn-primary" disabled={placedShips.length !== Object.keys(BattleshipShips).length || setupComplete} onClick={submitBoard}>Submit</button>
                     </Col>
                 </Row>
             }

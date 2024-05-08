@@ -1,7 +1,9 @@
 import React, { useState, useEffect, createContext } from 'react'
 import { Button } from 'react-bootstrap'
+import { toast } from 'react-toastify'
 import WordleBoard from './Wordle/Board'
 import DefaultBoard from './Wordle/DefaultBoard'
+import 'react-toastify/dist/ReactToastify.css'
 import '../styles/WordleStyle.css'
 
 export const AppContext = createContext()
@@ -11,26 +13,29 @@ const defnApi = 'https://api.dictionaryapi.dev/api/v2/entries/en/'      // + wor
 
 
 const WordleGame = () => {
-    const [word, setWord] = useState('wordy')
+    const [word, setWord] = useState("wordy")
     const [defn, setDefn] = useState([])
     const [isValid, setIsValid] = useState(false)
     const [inGame, setInGame] = useState(false)
     const [boardState, setBoardState] = useState([DefaultBoard])
 
-    const[letter, setLetter] = useState('')
-
+    var correctWord = ""
     var board = DefaultBoard
     var attempt = {word: 0, letter: 0}
     var guess = ""
-    var currLetter = ''
+    var attemptWordNum = 0
 
     async function getWord() {
         fetch(wordApi)
             .then(response => response.json())
-            .then(data => setWord(data[0]))
+            .then(data => {
+                setWord(data[0])
+                correctWord = data[0]
+            })
             .catch(err => {
                 console.error("Error fetching word: ", err)
                 setWord("wordy")
+                correctWord = "wordy"
             })
     }
 
@@ -59,26 +64,63 @@ const WordleGame = () => {
         setInGame(true)
     }
 
+    function resetGame() {
+        board = DefaultBoard
+        attempt = {word: 0, letter: 0}
+        guess = ''
+        setInGame(false)
+    }
+
     async function handleKeyDown(event) {
         const input = event.key
         if (input === 'Enter') {    // user submits word
             if (guess.length == 5) {
-                // TODO: submit guess and check letters
-                attempt = {word: attempt.word + 1, letter: 0}
-                guess = ''
-                console.log("valid guess")
+                if (guess === word) {
+                    toast.success('You won!!!', {
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                        });
+                    setTimeout(() => {
+                        window.location.reload()
+                      }, 5000)
+                    
+
+                } else if (attempt.word == 5) {
+                    toast.error('You lost 😔', {
+                        position: "top-center",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                        });
+                    setTimeout(() => {
+                        window.location.reload()
+                      }, 5000)
+                
+                } else {
+                    attempt = {word: attempt.word + 1, letter: 0}
+                    attemptWordNum += 1
+                    guess = ''
+                }
             } 
             
         } else if (input === 'Backspace' || input === 'Delete') {    // user deletes previous letter
             if (attempt.letter > 0) {
                 guess = guess.slice(0, -1)
                 attempt = {word: attempt.word, letter: attempt.letter - 1}
-                console.log("after backspace", guess, attempt.letter)
 
                 const tempBoard = [...board]
                 tempBoard[attempt.word][attempt.letter] = ''
                 board = tempBoard
-                console.log(board)
 
             }
 
@@ -86,27 +128,24 @@ const WordleGame = () => {
             if (guess.length < 5) {
                 // adds letter to current guess/word
                 guess += input
-                console.log("guess", guess)
 
                 // adds letter to board
                 const tempBoard = [...board]
                 tempBoard[attempt.word][attempt.letter] = input.toUpperCase()
                 board = tempBoard
-                console.log("board", board)
 
                 // moves to next letter position
                 attempt = {word: attempt.word, letter: attempt.letter + 1}
 
-                } else {
-                console.log("invalid input")
-                }
-            }
-            setBoardState(board)
+            } 
+        }
+        setBoardState(board)
     }
 
     useEffect(() => {
        document.addEventListener('keydown', handleKeyDown);
-      }, []);
+       setBoardState(board)
+      }, [word, attemptWordNum]);
     
     
     return (
@@ -119,7 +158,7 @@ const WordleGame = () => {
                     board,
                     attempt,
                     word,
-
+                    attemptWordNum
                 }}>
 
                 <div className="gameArea">

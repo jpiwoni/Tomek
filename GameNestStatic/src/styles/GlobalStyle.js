@@ -3,13 +3,14 @@ import "./imports.css";
 
 const GlobalStyle = createGlobalStyle`
     .square {
-        border: 1px solid #CCC;
+        border: 1px solid #BBB;
         display: flex;
         justify-content: center;
         align-items: center;
         cursor: pointer;
         padding-left: 0;
         padding-right: 0;
+        background-color: #668cff;
     }
 
     .square:before{
@@ -19,15 +20,7 @@ const GlobalStyle = createGlobalStyle`
     }
 
     .highlighted {
-        background-color: #6495ED !important;
-    }
-
-    .hit {
-        background-color: #FF0000;
-    }
-
-    .miss {
-        background-color: #D3D3D3;
+        background-color: #ffeb3b !important;
     }
 
     .sunk {

@@ -6,15 +6,15 @@ function Home() {
     <Container>
       <Row>
         <S.GameBox to="/battleship">
-          <S.GameBoxBackgroundImage $url="/img/battleship.png" $darken />
+          <S.GameBoxBackgroundImage $url="/img/battleship/battleship.png" $darken />
           <S.GameBoxLabel>Battleship</S.GameBoxLabel>
         </S.GameBox>
         <S.GameBox to="/blackjack">
-          <S.GameBoxBackgroundImage $url="https://placehold.co/300" $darken />
+          <S.GameBoxBackgroundImage $url="https://i.ibb.co/Dw9C9Sj/blackjack.png" $darken />
           <S.GameBoxLabel>Blackjack</S.GameBoxLabel>
         </S.GameBox>
         <S.GameBox to="/wordle">
-          <S.GameBoxBackgroundImage $url="https://i.ibb.co/CByZLjC/wordle.png" $darken />
+          <S.GameBoxBackgroundImage $url="/img/wordle/wordle.png" $darken />
           <S.GameBoxLabel>Wordle</S.GameBoxLabel>
         </S.GameBox>
         <S.GameBox to="/dotsAndBoxes">

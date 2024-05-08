@@ -16,7 +16,8 @@ export const GameBox = styled(Link)`
     0 1px 3px rgb(0 0 0 / 20%);
   border: 5px solid #11111199;
 
-  margin: 15px;
+  margin: 10px;
+  padding: 0px;
 
   &:hover {
     font-size: 3em;

@@ -6,6 +6,7 @@ import {
   BattleshipGame,
   BattleshipLobby,
   BlackjackGame,
+  DotsAndBoxesGame,
   ErrorPage,
   Forbidden,
   Home,
@@ -38,6 +39,7 @@ function App() {
                   <Route path="/blackjack" element={<BlackjackGame />} />
                 </Route>
                 <Route path="/wordle" element={<WordleGame />} />
+                <Route path="/dotsAndBoxes" element={<DotsAndBoxesGame />} />
                 <Route path="/" element={<Home />} />
               </Route>
             </Route>

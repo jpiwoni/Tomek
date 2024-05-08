@@ -2,7 +2,8 @@ import React, {useState, useEffect} from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 import '../styles/blackjack.css';
 
 const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
@@ -146,27 +147,88 @@ const BlackjackGame = () => {
     }
   };
 
+
+  const [show1, setShow1] = useState(false);
+  const [show2, setShow2] = useState(false);
+  const handleClose1 = () => setShow1(false);
+  const handleShow1 = () => setShow1(true);
+  const handleClose2 = () => setShow2(false);
+  const handleShow2 = () => setShow2(true);
+
+  
+  
   const playerScore = calculateHandValue(playerHand);
   const dealerScore = calculateHandValue(dealerHand);
     return (
       <div className="App">
         <Navbar bg="dark" variant="dark">
           <Container>
-            <Navbar.Brand href="#home">Blackjack</Navbar.Brand>
+            <Navbar.Brand>Blackjack</Navbar.Brand>
             <Navbar.Toggle />
             <Navbar.Collapse className="justify-content-end">
             <Nav className="me-auto">
-            <Nav.Link href="#home">Home</Nav.Link>
-            <Nav.Link href="#login">Login</Nav.Link>
-            <Nav.Link href="#about">About</Nav.Link>
+            <Nav.Link to="/home">Home</Nav.Link>
+            <Nav.Link onClick={handleShow1}>How to Play</Nav.Link>
+            <Nav.Link onClick={handleShow2}>Player Stats</Nav.Link>
           </Nav>
-              <Navbar.Text>
-                Signed in as: <a href="#login"></a>
-              </Navbar.Text>
             </Navbar.Collapse>
           </Container>
         </Navbar>
         <Container>
+        <>
+      <Modal show={show1} onHide={handleClose1}>
+        <Modal.Header closeButton>
+          <Modal.Title>How To Play</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+        <p>In blackjack, your goal is to get as close to 21 without going over, 
+          while having a higher number than the dealers hand. 
+          <br></br>
+          Each face card (Jack, Queen, King) count as ten, while an Ace can be 1 or 11.
+          <br></br>
+          Each number (2-10) counts as their respective value. 
+          <br></br>
+          You can start a game without entering a balance if you would like to practice.
+          <br></br>
+          Simply press "Start Game". Once pressed, you will see your hand, and the dealer's hand. Press hit if you would like another card,
+          or stand if you are happy with your value.</p>
+          <p>You win if:</p>
+          <ul>
+            <li>The dealer goes over 21.</li>
+            <li>You and the dealer have numbers less than or equal to 21, but your number is greater.</li>
+          </ul>
+        <p>You lose if:</p>
+          <ul>
+            <li>Your hand goes over 21.</li>
+            <li>Your hand and the dealer's hand have numbers less than or equal to 21, but the dealer's hand is greater.</li>
+          </ul>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose1}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
+    <>
+      <Modal show={show2} onHide={handleClose2}>
+        <Modal.Header closeButton>
+          <Modal.Title>Player Stats</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ul>
+            <li>Wins:</li>
+            <li>Losses:</li>
+            <li>Total Balance:</li>
+          </ul>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose2}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
           <div className="balance-section">
             <h3>Your Balance: ${balance}</h3>
             <label>

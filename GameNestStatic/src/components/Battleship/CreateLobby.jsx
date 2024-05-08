@@ -1,9 +1,10 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
 
-const CreateLobby = ({ onCreateLobby }) => {
+const CreateLobby = () => {
   const handleCreateLobby = () => {
-    onCreateLobby();
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    window.location.href = `/battleship/${code}`;
   };
 
   return (
